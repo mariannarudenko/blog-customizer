@@ -10,7 +10,7 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 import { Text } from 'src/ui/text/Text';
 
-import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
+import { OutsideClickHandler } from './OutsideClickHandler';
 
 import {
 	fontFamilyOptions,
@@ -30,21 +30,14 @@ type Props = {
 
 export const ArticleParamsForm = ({ articleState, setArticleState }: Props) => {
 	const [formState, setFormState] = useState(articleState);
-	const [open, setOpen] = useState(false);
-	const ref = useRef<HTMLDivElement | null>(null);
-
-	useOutsideClickClose({
-		isOpen: open,
-		onClose: () => setOpen(false),
-		onChange: setOpen,
-		rootRef: ref,
-	});
+	const [isFormOpen, setIsFormOpen] = useState(false);
+	const formRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		if (open) {
+		if (isFormOpen) {
 			setFormState(articleState);
 		}
-	}, [open]);
+	}, [isFormOpen]);
 
 	const handleChange =
 		(field: keyof ArticleStateType) => (option: OptionType) => {
@@ -57,22 +50,38 @@ export const ArticleParamsForm = ({ articleState, setArticleState }: Props) => {
 	const handleSubmit = (e: FormEvent) => {
 		e.preventDefault();
 		setArticleState(formState);
-		setOpen(false);
+		setIsFormOpen(false);
 	};
 
 	const handleReset = () => {
 		setFormState(defaultArticleState);
 		setArticleState(defaultArticleState);
-		setOpen(false);
+		setIsFormOpen(false);
 	};
 
 	return (
 		<>
-			<ArrowButton isOpen={open} onClick={() => setOpen(!open)} />
+			<ArrowButton
+				isOpen={isFormOpen}
+				onClick={() => setIsFormOpen(!isFormOpen)}
+			/>
 			<aside
-				className={clsx(styles.container, { [styles.container_open]: open })}
-				ref={ref}>
-				<form className={styles.form} onSubmit={handleSubmit}>
+				className={clsx(styles.container, {
+					[styles.container_open]: isFormOpen,
+				})}
+				ref={formRef}>
+				{isFormOpen && (
+					<OutsideClickHandler
+						isOpen={isFormOpen}
+						onClose={() => setIsFormOpen(false)}
+						onChange={setIsFormOpen}
+						rootRef={formRef}
+					/>
+				)}
+				<form
+					className={styles.form}
+					onSubmit={handleSubmit}
+					onReset={handleReset}>
 					<Text size={31} weight={800} uppercase as='h3' align='left'>
 						Задайте параметры
 					</Text>
@@ -116,12 +125,7 @@ export const ArticleParamsForm = ({ articleState, setArticleState }: Props) => {
 					/>
 
 					<div className={styles.bottomContainer}>
-						<Button
-							title='Сбросить'
-							htmlType='reset'
-							type='clear'
-							onClick={handleReset}
-						/>
+						<Button title='Сбросить' htmlType='reset' type='clear' />
 						<Button title='Применить' htmlType='submit' type='apply' />
 					</div>
 				</form>
