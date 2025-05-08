@@ -10,7 +10,7 @@ import { RadioGroup } from 'src/ui/radio-group';
 import { Separator } from 'src/ui/separator';
 import { Text } from 'src/ui/text/Text';
 
-import { OutsideClickHandler } from './OutsideClickHandler';
+import { useOutsideClickClose } from 'src/ui/select/hooks/useOutsideClickClose';
 
 import {
 	fontFamilyOptions,
@@ -32,6 +32,13 @@ export const ArticleParamsForm = ({ articleState, setArticleState }: Props) => {
 	const [formState, setFormState] = useState(articleState);
 	const [isFormOpen, setIsFormOpen] = useState(false);
 	const formRef = useRef<HTMLDivElement | null>(null);
+
+	useOutsideClickClose({
+		isOpen: isFormOpen,
+		onClose: () => setIsFormOpen(false),
+		onChange: setIsFormOpen,
+		rootRef: formRef,
+	});
 
 	useEffect(() => {
 		if (isFormOpen) {
@@ -70,14 +77,6 @@ export const ArticleParamsForm = ({ articleState, setArticleState }: Props) => {
 					[styles.container_open]: isFormOpen,
 				})}
 				ref={formRef}>
-				{isFormOpen && (
-					<OutsideClickHandler
-						isOpen={isFormOpen}
-						onClose={() => setIsFormOpen(false)}
-						onChange={setIsFormOpen}
-						rootRef={formRef}
-					/>
-				)}
 				<form
 					className={styles.form}
 					onSubmit={handleSubmit}
